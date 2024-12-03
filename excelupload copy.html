@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload and Display Excel</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<h1>Upload Excel File and Display Table</h1>
+
+<!-- File upload input -->
+<input type="file" id="excelFile" accept=".xls,.xlsx" onchange="handleFile(event)"><br><br>
+
+<!-- Table to display the content -->
+<h3>Excel Content:</h3>
+<div id="excelTable"></div>
+
+<script>
+  function handleFile(event) {
+    const file = event.target.files[0];
+    
+    if (file) {
+      const reader = new FileReader();
+      
+      reader.onload = function(e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+
+        // Assuming the first sheet in the Excel file
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+
+        // Convert the sheet to JSON format
+        const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        // Display the table
+        displayTable(json);
+      };
+
+      reader.readAsBinaryString(file);
+    }
+  }
+
+  function displayTable(data) {
+    let tableHtml = '<table border="1" cellpadding="5" cellspacing="0"><thead><tr>';
+
+    // Create table headers
+    data[0].forEach(header => {
+      tableHtml += `<th>${header}</th>`;
+    });
+
+    tableHtml += '</tr></thead><tbody>';
+
+    // Create table rows
+    for (let i = 1; i < data.length; i++) {
+      tableHtml += '<tr>';
+      data[i].forEach(cell => {
+        tableHtml += `<td>${cell}</td>`;
+      });
+      tableHtml += '</tr>';
+    }
+
+    tableHtml += '</tbody></table>';
+
+    // Display the table in the div
+    document.getElementById('excelTable').innerHTML = tableHtml;
+  }
+</script>
+
+</body>
+</html>
+    
